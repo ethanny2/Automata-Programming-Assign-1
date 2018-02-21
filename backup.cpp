@@ -11,7 +11,7 @@ Programming Assignment 1: CS 373 Simulate an (partial)NFA
 using namespace std;
 #define MAX_CONFIG_SIZE 1000000
 #define MAX_NUMBER_STATES 2000
-/* Won't be used multimap is already allocates dynamically. Its a tree*/
+/* Won't be used map is already allocates dynamically. Its a tree*/
 #define MAX_TRANSITIONS_SIZE 100000
 class Configuration;
 class Node;
@@ -51,9 +51,9 @@ class Node{
 	/*Not sure yet but using a map <int, int> 
 	with <transtionSymbol,endState> */
 	/*WE NEED 2 MAPS THIS ONE IS FOR INTS */
-	multimap<int,int> transitionsMap; /* At most 100,000 transitions max size of map on G7 computer is 461168601842738790*/
+	map<int,int> transitionsMap; /* At most 100,000 transitions max size of map on G7 computer is 461168601842738790*/
 	/* This map is for a-z lower case*/
-	multimap<char,int> transitionsCharMap;
+	map<char,int> transitionsCharMap;
 	void setTransition(int,int);
 	void setTransitionChar(char,int);
 	void printTransitions();
@@ -68,7 +68,7 @@ class Node{
 
 /* Should only look through the current nodes list of transitions*/
 Node Node::searchForTransition(int transitionNum){
-	multimap<int,int>::iterator pos;
+	map<int,int>::iterator pos;
 	int i;
 	int foundState = -1;
         if(!(this->transitionsMap.empty())){
@@ -81,7 +81,7 @@ Node Node::searchForTransition(int transitionNum){
 }
 
 Node Node::searchForTransition(char transitionChar){
-       multimap<int,int>::iterator pos;
+       map<int,int>::iterator pos;
         int i;
         for(i=0;i<machineStates.size();i++){
                 if(!(this->transitionsMap.empty())){
@@ -117,21 +117,20 @@ Node Node::searchForState(int nextState){
 
 void Node::setTransition(int symbol , int endState){
 	//cout<<"!!!!!!!"<< this->transitionsMap.max_size()<<endl;
-	this->transitionsMap.insert(pair<int,int> (symbol,endState));
+	this->transitionsMap[symbol] = endState;
 }
 
 
 void Node::setTransitionChar(char symbol, int endState){
-	this->transitionsCharMap.insert(pair<char,int> (symbol,endState));
-	//this->transitionsCharMap[symbol] = endState;
+	this->transitionsCharMap[symbol] = endState;
 }
 
 
 /* For printing all transition paths (symbols + end states) for each individual Node/machine state. Returns string because it is exclusively for use with the
 printMachineStates function*/
 void Node::printTransitions(){
-	multimap<int,int>::iterator pos;
-	multimap<char,int>::iterator pos2;
+	map<int,int>::iterator pos;
+	map<char,int>::iterator pos2;
 	if(!(this->transitionsMap.empty())){
     		for (pos = this->transitionsMap.begin(); pos != this->transitionsMap.end(); ++pos) {
         		cout << "Symbol: \"" << pos->first << "\" "
