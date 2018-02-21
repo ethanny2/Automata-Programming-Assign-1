@@ -19,9 +19,7 @@ class Node;
 string globalInputString;
 /*Nodes will also be in global list */
 vector<Node> machineStates;
-machineStates.reserve(MAX_NUMBER_STATES);
 vector<Configuration> configList;
-configList.reserve(MAX_CONFIG_SIZE);
 
 
 
@@ -37,59 +35,10 @@ void parseInputString(string inputString){
 }
 
 
-/* Represents the configurations we need each has a CURRENT STATE THE REMAINING INPUT STRING */
-class Configuration{
-	public:
-	/* MIGHT NOT WORK*/
-	Configuration(Node currentStateIn , string remainingInputIn){
-		currentState = currentStateIn;
-		remainingInput = remainingInputIn;
-		accept = false;
-	}
-	Node currentState;
-	string remainingInput;
-	/* Mark true if the input string is empty and the currentState has the boolean signifying that it is an accept state*/
-	bool accept;
-	/* After all configurations are processed look through the configList vector and check if it has an accept state, if so set it and print it	*/
-	void printAcceptState();
-	void setBooleanAccept();
-};
-
-
-void Configuration::setBooleanAccept(){
-	if(currentState.acceptState){
-		accept = true;
-	}
-}
-
-void Configuration::printAcceptState(){
-	int i;
-	int acceptConfigFound = false;
-	string acceptString = "accept";
-	string rejectString = "reject";
-	/* If there is at least 1 accept value, don't print the reject values*/
-	for(i=0;i<configList.size();i++){
-		//set the correct value
-		configList[i].setBooleanAccept();
-		if(configList[i].accept){
-			acceptString += " "+(configList[i].currentState.stateNum);
-			acceptConfigFound = true;
-		}else{
-			rejectString+= " "+(configList[i].currentState.stateNum);
-		}
-	}
-	/* Output needs to end with newline char*/
-	if(acceptConfigFound){
-		cout<<acceptString<<endl;
-	}else{
-		cout<<rejectString<<endl;
-	}
-}
-
-
-/* Represents 1 node in the NFA. Making */
+/*Represents 1 node in the NFA. Making */
 class Node{
   public:
+	 Node();
 	 Node(int stateNumIn , bool startIn , bool acceptIn){
        	 	stateNum = stateNumIn;
         	startState = startIn;
@@ -116,15 +65,6 @@ class Node{
 	/* Searching for a reference to the state number*/
 	Node searchForState(int nextState);
 };
-
-
-
-
-
-
-
-
-
 
 /* Should only look through the current nodes list of transitions*/
 Node Node::searchForTransition(int transitionNum){
@@ -223,12 +163,15 @@ std::ostream &operator<<(std::ostream &os, Node const &node){
 
 
 
+
+
 /* Prints all State details from the machine including each states number, weather or not it is a start or accept state 
 and the number of transitions starting from the speicifed state*/
 void printMachineStates(){
 	int i;
 	for(i=0;i<machineStates.size();i++){
 		cout<<machineStates[i];
+		cout<<"Printing transitions"<<endl;
 		machineStates[i].printTransitions();
 		cout<<"*************************************************************"<<endl;
 
@@ -354,6 +297,57 @@ void  createMachineLayout(char * fileName){
 
 
 
+/* Represents the configurations we need each has a CURRENT STATE THE REMAINING INPUT STRING */
+class Configuration{
+	public:
+	/* MIGHT NOT WORK*/
+	Configuration(Node currentStateIn , string remainingInputIn){
+		currentState = currentStateIn;
+		remainingInput = remainingInputIn;
+		accept = false;
+	}
+	Node currentState;
+	string remainingInput;
+	/* Mark true if the input string is empty and the currentState has the boolean signifying that it is an accept state*/
+	bool accept;
+	/* After all configurations are processed look through the configList vector and check if it has an accept state, if so set it and print it	*/
+	void printAcceptState();
+	void setBooleanAccept();
+};
+
+
+void Configuration::setBooleanAccept(){
+	if(currentState.acceptState){
+		accept = true;
+	}
+}
+
+void Configuration::printAcceptState(){
+	int i;
+	int acceptConfigFound = false;
+	string acceptString = "accept";
+	string rejectString = "reject";
+	/* If there is at least 1 accept value, don't print the reject values*/
+	for(i=0;i<configList.size();i++){
+		//set the correct value
+		configList[i].setBooleanAccept();
+		if(configList[i].accept){
+			acceptString += " "+(configList[i].currentState.stateNum);
+			acceptConfigFound = true;
+		}else{
+			rejectString+= " "+(configList[i].currentState.stateNum);
+		}
+	}
+	/* Output needs to end with newline char*/
+	if(acceptConfigFound){
+		cout<<acceptString<<endl;
+	}else{
+		cout<<rejectString<<endl;
+	}
+}
+
+
+
 
 
 
@@ -363,6 +357,8 @@ int main(int argc, char* argv[]) {
 		cout<<"Incorrect format"<<'\n'<<"Correct format is --> [machine_config.txt] [inputString]"<<endl;
 		exit(1);
 	}else{
+		machineStates.reserve(MAX_NUMBER_STATES);
+		configList.reserve(MAX_CONFIG_SIZE);
 		string myInput(argv[2]);
 		parseInputString(myInput);
 		/* Successfully parsed file*/
@@ -376,4 +372,6 @@ int main(int argc, char* argv[]) {
 	}
  	return 0;
 }
+
+
 
