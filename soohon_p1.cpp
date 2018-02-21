@@ -166,6 +166,14 @@ std::ostream &operator<<(std::ostream &os, Node const &node){
 
 
 
+
+
+
+
+
+
+
+
 /* Prints all State details from the machine including each states number, weather or not it is a start or accept state 
 and the number of transitions starting from the speicifed state*/
 void printMachineStates(){
@@ -246,10 +254,10 @@ void  createMachineLayout(char * fileName){
 			if(strcmp(cString, temp1)==0){
 				/* This a start node*/
 				Node temp(stateNum,true,false);
+				/*ALSO PUT THIS START INTO THE FIRST CONFIG*/
+				Configuration configObj(temp,globalInputString);
+				configList.push_back(configObj);
 				machineStates.push_back(temp);
-				/*ALSO PUT THIS START INTO THE FIRST CONFIG */
-				//Configuration
-				//configList.push_back(temp,globalInputString);
 			}else if(strcmp(cString,temp2)==0){
 				Node temp(stateNum,false,true);
 				machineStates.push_back(temp);
