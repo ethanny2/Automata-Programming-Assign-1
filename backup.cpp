@@ -8,13 +8,14 @@ Programming Assignment 1: CS 373 Simulate an (partial)NFA
 #include <fstream>
 #include <cstring>
 #include <ctype.h>
-#include "Configuration.h"
-#include "Node.h"
 using namespace std;
 #define MAX_CONFIG_SIZE 1000000
 #define MAX_NUMBER_STATES 2000
 /* Won't be used multimap is already allocates dynamically. Its a tree*/
 #define MAX_TRANSITIONS_SIZE 100000
+class Node;
+class Configuration;
+
 /*Global var to hold the input string, don't know the maximum number of character(?) */
 string globalInputString;
 /*Nodes will also be in global list */
@@ -38,84 +39,83 @@ void parseInputString(string inputString){
 /*Represents 1 node in the NFA. Making */
 
 
- 
+
+class Node{
+  public:
+	 Node(){};
+	 Node(int stateNumIn , bool startIn , bool acceptIn){
+       	 	stateNum = stateNumIn;
+        	startState = startIn;
+		acceptState = acceptIn;
+    	}
+	int stateNum; /* 0-1000*/
+	/*Both start false and set as needed */
+	bool startState = false;
+	bool acceptState = false;
+	/*Not sure yet but using a map <int, int> 
+	with <transtionSymbol,endState> */
+	/*WE NEED 2 MAPS THIS ONE IS FOR INTS */
+	multimap<int,int> transitionsMap; /* At most 100,000 transitions max size of map on G7 computer is 461168601842738790*/
+	/* This map is for a-z lower case*/
+	multimap<char,int> transitionsCharMap;
+	void setTransition(int,int);
+	void setTransitionChar(char,int);
+	void printTransitions();
+	/* Uses machine states global variable and need both functions to look
+	for both chars and int*/
+	/*Check if any of the nodes in machineStates have this transition RETURNS THE NEXT STATE That it transitions to */
+	void searchForTransition(int transitionNum, string currentInputString ,int);
+	void searchForTransition(char transitionChar , string currentInputString ,int);
+	/* Searching for a reference to the state number*/
+	Node searchForState(int nextState);
+};
+
 /* Should only look through the current nodes list of transitions*/
-
-
-//RETURNS BOOLEAN IF NO TRANSITION AT THE CURRENT STATE MATCHES THE SYMBOL,
-//E.G IF FOUNDSTATE == 0 BY THE END OF THE FUNCTION... then return false. Else true
-bool Node::searchForTransition(int transitionNum , string currentInputString , int configIndex){
+void Node::searchForTransition(int transitionNum , string currentInputString , int configIndex){
 	multimap<int,int>::iterator pos;
 	int foundState = 0;
         if(!(this->transitionsMap.empty())){
         	for (pos = this->transitionsMap.begin(); pos != this->transitionsMap.end(); ++pos){
 			if(pos->first == transitionNum && foundState == 0){
 					/*Found matching state with transition num */
-					cout<<"Found matching transition with SYMBOL INT "<< pos->first <<endl;
-					cout<<"At current State "<< configList[configIndex].currentState->stateNum <<endl;
+					cout<<"Found matching transition with SYMBOL "<< pos->first <<endl;
 					foundState++;
 					//Change the state of current config object at the index and reduce the input by 1
 					configList[configIndex].currentState = (this->searchForState(pos->second));
 					configList[configIndex].remainingInput =  currentInputString;
 			}else if(pos->first == transitionNum){
 				/*Create new config objects and push to list with -1 symbol input */
-				  cout<<"Found matching ADDITIONAL transition with SYMBOL CHAR" << pos->first <<endl;
-                                  cout<<"At current State "<< configList[configIndex].currentState->stateNum <<endl;
-				  Configuration temp(this->searchForState(pos->second), currentInputString);
+				  Configuration temp(this->searchForState(pos->second), currentInputString);_
                                   configList.push_back( temp );
 			}
                 }
         }
 
-	if(foundState==0){
-		return false;
-	}else if(foundState>=1){
-		return true;
-	}
+
 }
 
-bool Node::searchForTransition(char transitionChar , string currentInputString , int configIndex){
+void Node::searchForTransition(char transitionChar , string currentInputString , int configIndex){
         multimap<char,int>::iterator pos;
         int i;
-	int foundState = 0;
         for(i=0;i<machineStates.size();i++){
                 if(!(this->transitionsCharMap.empty())){
                         for (pos = this->transitionsCharMap.begin(); pos != this->transitionsCharMap.end(); ++pos){
-				if(pos->first == transitionChar && foundState ==0){
-					cout<<"Found matching transition with SYMBOL CHAR" << pos->first <<endl;
-					 cout<<"At current State "<< configList[configIndex].currentState->stateNum <<endl;
-					 foundState++;
-                                        //Change the state of current config object at the index and reduce the in$
-                                        configList[configIndex].currentState = (this->searchForState(pos->second));
-                                        configList[configIndex].remainingInput =  currentInputString;
-				}else if(pos->first == transitionChar){
-				  cout<<"Found matching ADDITIONAL transition with SYMBOL CHAR" << pos->first <<endl;
-                                  cout<<"At current State "<< configList[configIndex].currentState->stateNum <<endl;
-				  Configuration temp(this->searchForState(pos->second), currentInputString);
-                                  configList.push_back( temp );
+				if(pos->first == transitionChar){
+					cout<<"Found matching transition with SYMBOL " << pos->first <<endl;
 				}
                         }
                 }
         }
-
-	
-        if(foundState==0){
-                return false;
-        }else if(foundState>=1){
-                return true;
-        }
-
 }
 
 
 
 /* Dont know if this works !!!!!!!!!!!1 it does but returns a copy*/
-Node* Node::searchForState(int nextState){
+Node Node::searchForState(int nextState){
 	int i;
 	for(i=0;i<machineStates.size();i++){
 		if(machineStates[i].stateNum==nextState){
-			cout<<"FOUND STATE : "<<machineStates[i].stateNum<<endl;
-			return	&machineStates[i];
+			return	machineStates[i];
 		}
 	}
 	//return
@@ -318,15 +318,32 @@ void  createMachineLayout(char * fileName){
 
 
 
+/* Represents the configurations we need each has a CURRENT STATE THE REMAINING INPUT STRING */
+class Configuration{
+	public:
+	/* MIGHT NOT WORK*/
+	Configuration(Node *currentStateIn , string remainingInputIn){
+		currentState = currentStateIn;
+		remainingInput = remainingInputIn;
+		accept = false;
+	}
+	Node *currentState;
+	string remainingInput;
+	/* Mark true if the input string is empty and the currentState has the boolean signifying that it is an accept state*/
+	bool accept;
+	/* After all configurations are processed look through the configList vector and check if it has an accept state, if so set it and print it	*/
+	void printAcceptState();
+	void setBooleanAccept();
+};
 
-
+/*
 void Configuration::setBooleanAccept(){
-	if(currentState->acceptState){
+	if(currentState.acceptState){
 		accept = true;
 	}
 }
 
-void printAcceptState(){
+void Configuration::printAcceptState(){
 	int i;
 	int acceptConfigFound = false;
 	string acceptString = "accept";
@@ -336,20 +353,10 @@ void printAcceptState(){
 		//set the correct value
 		configList[i].setBooleanAccept();
 		if(configList[i].accept){
-			string number =  to_string(configList[i].currentState->stateNum);
-			if(acceptString.find(number)==string::npos){
-				//Only if not in string add
-				acceptString += " ";
-				acceptString += number;
-			}
+			acceptString += " "+(configList[i].currentState.stateNum);
 			acceptConfigFound = true;
 		}else{
-                        string number =  to_string(configList[i].currentState->stateNum);
-                        if(rejectString.find(number)==string::npos){
-                                //Only if not in string add
-				rejectString += " ";
-                                rejectString += number;
-                        }
+			rejectString+= " "+(configList[i].currentState.stateNum);
 		}
 	}
 	if(acceptConfigFound){
@@ -358,7 +365,7 @@ void printAcceptState(){
 		cout<<rejectString<<endl;
 	}
 }
-
+*/
 
 
 
@@ -382,32 +389,18 @@ void initializeConfigList(){
 void runMainLoop(){
 	int i;
 	int j;
+	char curChar;
+	int curInt;
 	for(i=0;i<configList.size();i++){
-		cout<<"I = "<<i<<endl;
 	//	configList[i].currentState->searchForTransition(test
 		for(j=0;j<globalInputString.length();j++){
 			if(isdigit(globalInputString[j])){
-				//Converting from  char to int
-				int curInt  = globalInputString[j] - '0';
-				cout<<"Symbol at index "<<j<<" is "<<curInt<<endl;
-				string curString = globalInputString;
-				curString.erase(0,j);
-				/* Give to config and search*/
-				bool validTransition = configList[i].currentState->searchForTransition(curInt,curString,i);
-				//If there are no transitions at the current state move to the next one
-				if(!validTransition){
-					break;
-				}
+				curInt  = atoi(globalInputString[j]);
+				cout<<"CurrInt at index "<<j<<" is "<<curInt<<endl;
 			}else{
 				/* The symbol is a char*/
-				char curChar = globalInputString[j];
-				cout<<"Sybmol at index "<<j<<" is " << curChar<<endl;
-				string curString = globalInputString;
-                                curString.erase(0,j);
-				bool validTransition = configList[i].currentState->searchForTransition(curChar,curString,i);
-				if(!validTransition){
-					break;
-				}
+				curChar = globalInputString[j];
+				cout<<"CurrCar at index "<<j<<" is " << curChar<<endl;
 
 			}
 		}
@@ -432,19 +425,12 @@ int main(int argc, char* argv[]) {
 		//currentState = machineStates.front();
 		/* Next create configuration class for start*/
 		initializeConfigList();
-		runMainLoop();
-		printAcceptState();
 		/* Test looking for transitions on a config node*/
 	//	cout<<configList[0].currentState<<endl;
-		//configList[0].currentState->printTransitions();
-		//int test = 0;
-		//int before = configList[0].currentState->stateNum;
-	//	cout<<"BEFORE: "<<before<<endl;
-	//	configList[0].currentState->searchForTransition(test,configList[0].remainingInput,0);
-	//	int after = configList[0].currentState->stateNum; 
-	//	cout<<"AFTER: "<<after<<endl;
+		configList[0].currentState->printTransitions();
+//		int test = 0;
+//		configList[0].currentState->searchForTransition(test,configList[0].remainingInput);
 		/*Needs to find and add */
-		//runMainLoop();	
 	}
  	return 0;
 }
