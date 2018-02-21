@@ -30,7 +30,7 @@ vector<Configuration> configList;
 /*As opposed to allocating a char array, use c++ [] operator on strings to index into the 
 specfied character. The string is a global variable */
 void parseInputString(string inputString){
-	cout<<inputString<<endl;
+	//cout<<inputString<<endl;
 	globalInputString = inputString;
 }
 
@@ -51,16 +51,17 @@ bool Node::searchForTransition(int transitionNum , string currentInputString , i
         	for (pos = this->transitionsMap.begin(); pos != this->transitionsMap.end(); ++pos){
 			if(pos->first == transitionNum && foundState == 0){
 					/*Found matching state with transition num */
-					cout<<"Found matching transition with SYMBOL INT "<< pos->first <<endl;
-					cout<<"At current State "<< configList[configIndex].currentState->stateNum <<endl;
+					//cout<<"Found matching transition with SYMBOL INT "<< pos->first <<endl;
+					//cout<<"At current State "<< configList[configIndex].currentState->stateNum <<endl;
 					foundState++;
 					//Change the state of current config object at the index and reduce the input by 1
 					configList[configIndex].currentState = (this->searchForState(pos->second));
 					configList[configIndex].remainingInput =  currentInputString;
 			}else if(pos->first == transitionNum){
 				/*Create new config objects and push to list with -1 symbol input */
-				  cout<<"Found matching ADDITIONAL transition with SYMBOL CHAR" << pos->first <<endl;
-                                  cout<<"At current State "<< configList[configIndex].currentState->stateNum <<endl;
+				  //cout<<"Found matching ADDITIONAL transition with SYMBOL CHAR" << pos->first <<endl;
+                                  //cout<<"At current State "<< configList[configIndex].currentState->stateNum <<endl;
+				
 				  Configuration temp(this->searchForState(pos->second), currentInputString);
                                   configList.push_back( temp );
 			}
@@ -82,15 +83,15 @@ bool Node::searchForTransition(char transitionChar , string currentInputString ,
                 if(!(this->transitionsCharMap.empty())){
                         for (pos = this->transitionsCharMap.begin(); pos != this->transitionsCharMap.end(); ++pos){
 				if(pos->first == transitionChar && foundState ==0){
-					cout<<"Found matching transition with SYMBOL CHAR" << pos->first <<endl;
-					 cout<<"At current State "<< configList[configIndex].currentState->stateNum <<endl;
+					//cout<<"Found matching transition with SYMBOL CHAR" << pos->first <<endl;
+					 //cout<<"At current State "<< configList[configIndex].currentState->stateNum <<endl;
 					 foundState++;
                                         //Change the state of current config object at the index and reduce the in$
                                         configList[configIndex].currentState = (this->searchForState(pos->second));
                                         configList[configIndex].remainingInput =  currentInputString;
 				}else if(pos->first == transitionChar){
-				  cout<<"Found matching ADDITIONAL transition with SYMBOL CHAR" << pos->first <<endl;
-                                  cout<<"At current State "<< configList[configIndex].currentState->stateNum <<endl;
+				  //cout<<"Found matching ADDITIONAL transition with SYMBOL CHAR" << pos->first <<endl;
+                                  //cout<<"At current State "<< configList[configIndex].currentState->stateNum <<endl;
 				  Configuration temp(this->searchForState(pos->second), currentInputString);
                                   configList.push_back( temp );
 				}
@@ -114,7 +115,7 @@ Node* Node::searchForState(int nextState){
 	int i;
 	for(i=0;i<machineStates.size();i++){
 		if(machineStates[i].stateNum==nextState){
-			cout<<"FOUND STATE : "<<machineStates[i].stateNum<<endl;
+			//cout<<"FOUND STATE : "<<machineStates[i].stateNum<<endl;
 			return	&machineStates[i];
 		}
 	}
@@ -312,7 +313,7 @@ void  createMachineLayout(char * fileName){
 	}
 
 	/*Check nodes*/
-	printMachineStates();
+	//printMachineStates();
 
 }
 
@@ -370,7 +371,7 @@ void initializeConfigList(){
                 if(machineStates[i].startState){
                         Configuration object = Configuration(&machineStates[i] , globalInputString);
                         configList.push_back(object);
-                        cout<<"Set first config"<<endl;
+                        //cout<<"Set first config"<<endl;
                 }
         }
 }
@@ -383,15 +384,18 @@ void runMainLoop(){
 	int i;
 	int j;
 	for(i=0;i<configList.size();i++){
-		cout<<"I = "<<i<<endl;
+		//cout<<"I = "<<i<<endl;
+		string configString =  configList[i].remainingInput;
+		//cout<<"REMAING STRING "<<configString<<endl;
 	//	configList[i].currentState->searchForTransition(test
-		for(j=0;j<globalInputString.length();j++){
-			if(isdigit(globalInputString[j])){
+		for(j=0;j<configString.length();j++){
+			if(isdigit(configString[j])){
 				//Converting from  char to int
-				int curInt  = globalInputString[j] - '0';
-				cout<<"Symbol at index "<<j<<" is "<<curInt<<endl;
-				string curString = globalInputString;
-				curString.erase(0,j);
+				int curInt  = configString[j] - '0';
+				//cout<<"Symbol at index "<<j<<" is "<<curInt<<endl;
+				string curString = configString;
+				curString.erase(0,j+1);
+				//cout<<"CUR STRING AFTER CONSUME "<<curString<<endl;
 				/* Give to config and search*/
 				bool validTransition = configList[i].currentState->searchForTransition(curInt,curString,i);
 				//If there are no transitions at the current state move to the next one
@@ -400,10 +404,10 @@ void runMainLoop(){
 				}
 			}else{
 				/* The symbol is a char*/
-				char curChar = globalInputString[j];
-				cout<<"Sybmol at index "<<j<<" is " << curChar<<endl;
-				string curString = globalInputString;
-                                curString.erase(0,j);
+				char curChar =  configString[j];
+				//cout<<"Sybmol at index "<<j<<" is " << curChar<<endl;
+				string curString =  configString;
+                                curString.erase(0,j+1);
 				bool validTransition = configList[i].currentState->searchForTransition(curChar,curString,i);
 				if(!validTransition){
 					break;
@@ -444,7 +448,8 @@ int main(int argc, char* argv[]) {
 	//	int after = configList[0].currentState->stateNum; 
 	//	cout<<"AFTER: "<<after<<endl;
 		/*Needs to find and add */
-		//runMainLoop();	
+		//runMainLoop();
+		
 	}
  	return 0;
 }
