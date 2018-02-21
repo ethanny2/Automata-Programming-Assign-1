@@ -13,8 +13,8 @@ using namespace std;
 #define MAX_NUMBER_STATES 2000
 /* Won't be used map is already allocates dynamically. Its a tree*/
 #define MAX_TRANSITIONS_SIZE 100000
-class Node;
 class Configuration;
+class Node;
 /*Global var to hold the input string, don't know the maximum number of character(?) */
 string globalInputString;
 /*Nodes will also be in global list */
@@ -44,9 +44,46 @@ class Configuration{
 	Configuration(Node currentStateIn , string remainingInputIn){
 		currentState = currentStateIn;
 		remainingInput = remainingInputIn;
+		accept = false;
 	}
 	Node currentState;
 	string remainingInput;
+	/* Mark true if the input string is empty and the currentState has the boolean signifying that it is an accept state*/
+	bool accept;
+	/* After all configurations are processed look through the configList vector and check if it has an accept state, if so set it and print it	*/
+	void printAcceptState();
+	void setBooleanAccept();
+};
+
+
+void Configuration::setBooleanAccept(){
+	if(currentState.acceptState){
+		accept = true;
+	}
+}
+
+void Configuration::printAcceptState(){
+	int i;
+	int acceptConfigFound = false;
+	string acceptString = "accept";
+	string rejectString = "reject";
+	/* If there is at least 1 accept value, don't print the reject values*/
+	for(i=0;i<configList.size();i++){
+		//set the correct value
+		configList[i].setBooleanAccept();
+		if(configList[i].accept){
+			acceptString += " "+(configList[i].currentState.stateNum);
+			acceptConfigFound = true;
+		}else{
+			rejectString+= " "+(configList[i].currentState.stateNum);
+		}
+	}
+	/* Output needs to end with newline char*/
+	if(acceptConfigFound){
+		cout<<acceptString<<endl;
+	}else{
+		cout<<rejectString<<endl;
+	}
 }
 
 
@@ -79,6 +116,14 @@ class Node{
 	/* Searching for a reference to the state number*/
 	Node searchForState(int nextState);
 };
+
+
+
+
+
+
+
+
 
 
 /* Should only look through the current nodes list of transitions*/
@@ -114,14 +159,14 @@ Node Node::searchForTransition(char transitionChar){
 
 /* Dont know if this works !!!!!!!!!!!1*/
 Node Node::searchForState(int nextState){
-	Node retVal = NULL;
+	//Node retVal = NULL;
+	int i;
 	for(i=0;i<machineStates.size();i++){
 		if(machineStates[i].stateNum==nextState){
-			retVal = machineStates[i];
+		return	machineStates[i];
 		}
 	}
-	return retVal;
-
+	//return
 }
 
 
@@ -259,7 +304,8 @@ void  createMachineLayout(char * fileName){
 				Node temp(stateNum,true,false);
 				machineStates.push_back(temp);
 				/*ALSO PUT THIS START INTO THE FIRST CONFIG */
-				configList.push_back(temp,globalInputString);
+				//Configuration
+				//configList.push_back(temp,globalInputString);
 			}else if(strcmp(cString,temp2)==0){
 				Node temp(stateNum,false,true);
 				machineStates.push_back(temp);
@@ -322,8 +368,10 @@ int main(int argc, char* argv[]) {
 		/* Successfully parsed file*/
 		createMachineLayout(argv[1]);
 		/* Set current State to the start state*/
-		currentState = machineStates.front();
-		/* Next create configuration class*/
+		//currentState = machineStates.front();
+		/* Next create configuration class for start*/
+		// Configuration(currentState , globalInputString);
+
 
 	}
  	return 0;
